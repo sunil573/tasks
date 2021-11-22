@@ -1,0 +1,63 @@
+    #################################################################################
+    ####################################  CONTROLLER  ###################################
+
+ public function send_mail_with_attachments(){
+        include APPPATH . 'third_party/mpdf/vendor/autoload.php';
+        $mpdf = new \Mpdf\Mpdf();
+                $email = 'example@email.com';
+            
+            
+            ob_start();
+            
+            echo '<h1>Hello world!</h1>';
+            
+            $html = ob_get_contents();
+            ob_end_clean();
+        
+        
+            $mpdf->WriteHTML(utf8_encode($html));
+             $file = $mpdf->Output('', 'S');
+          $subject = 'Email with pdf attachments';
+        $msg = @send_mail_with_attachments($email,$subject,$html,$file);
+       if($msg){
+	echo 'success';
+	exit();
+}
+echo 'error';
+    }
+    
+    
+    
+    #################################################################################
+    ####################################  HELPER  ###################################
+
+    
+    function send_mail_with_attachments($email,$subject,$message,$file){
+    $from = "example@from.com";
+    $sender_name = "Attachments";
+    $ci = &get_instance();
+    $config = Array(
+        'mailpath' => '/usr/sbin/sendmail',
+        'protocol' => 'sendmail',
+        'smtp_host' => '*******',
+        'smtp_port' => '***',
+        'smtp_user' => '************',
+        'smtp_pass' => '*********',
+        'mailtype'  => 'html', 
+        'charset'   => 'iso-8859-1',
+    );
+    $ci->load->library('email');    
+    $ci->email->initialize($config);
+    $ci->email->from($from, $sender_name);
+    $ci->email->to(trim($email));           
+    $ci->email->subject($subject);
+    $ci->email->message($message);
+    $ci->email->attach($file, 'attachment', 'filename.pdf', 'application/pdf');
+    if($ci->email->send()){
+        return true;
+    }else{
+        return false;
+    }   
+}
+
+
